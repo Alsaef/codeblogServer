@@ -14,12 +14,14 @@ mongoose.connect(process.env.DB_CONNECTION).then(()=>{
 
 const blogRouter=require('./Route/blogRouter')
 const userRoute=require('./Route/userRoute')
+const usersRoute=require('./Route/usersRoute')
 const commentRoute=require('./Route/commentRoute')
 
 
 
 app.use('/api/v1/blog',blogRouter)
 app.use('/api/v1/user',userRoute)
+app.use('/api/v1/users',usersRoute)
 app.use('/api/v1/comment',commentRoute)
 app.get('/', (req, res) => {
   res.send('Server Rounning!')

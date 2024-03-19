@@ -40,3 +40,12 @@ module.exports.getUser=async(req,res)=>{
         console.log(error)
     }
 }
+
+module.exports.GetUsers=async(req,res)=>{
+  try {
+     const result=await user.find().sort({createdAt:-1})
+     res.status(200).json(result)
+  } catch (error) {
+    console.log(error)
+  }
+}
