@@ -17,6 +17,7 @@ module.exports.getBlog=async(req,res)=>{
         const filter = {
             $or: [
               { name: { $regex: searchQuery, $options: 'i' } }, // Case-insensitive name search
+              { category: { $regex: searchQuery, $options: 'i' } }, // Case-insensitive name search
               { location: { $regex: searchQuery, $options: 'i' } }, // Case-insensitive location search
             ],
           };

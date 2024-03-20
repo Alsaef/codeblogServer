@@ -5,6 +5,10 @@ const blogSchema=mongoose.Schema({
         type:String,
         require:true
     },
+    category:{
+        type:String,
+        require:true
+    },
     image:{
         type:String,
         require:true
