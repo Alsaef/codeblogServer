@@ -14,7 +14,7 @@ module.exports.createblog=async(req,res)=>{
 module.exports.getBlog=async(req,res)=>{
         try {
             const { searchQuery } = req.query;
-        const filter = {
+            const filter = {
             $or: [
               { name: { $regex: searchQuery, $options: 'i' } }, // Case-insensitive name search
               { category: { $regex: searchQuery, $options: 'i' } }, // Case-insensitive name search
@@ -26,7 +26,7 @@ module.exports.getBlog=async(req,res)=>{
             res.status(200).json(blogs );
          }
         else{
-            const blogs = await blog.find();
+            const blogs = await blog.find().sort({createdAt:-1});
             res.status(200).json(blogs );
         }
 
