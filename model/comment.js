@@ -5,6 +5,10 @@ const commentSchema=mongoose.Schema({
        type:String,
        
     },
+     name:{
+       type:String,
+       
+    },
     comments:{
        type:String,
 

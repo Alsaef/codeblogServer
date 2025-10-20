@@ -13,22 +13,11 @@ module.exports.createComment=async(req,res)=>{
 }
 
 module.exports.getComment=async(req,res)=>{
-   const result = await comment.aggregate([
+  try {
+    const result= await comment.find()
 
-
-    {
-        $lookup:{
-            from: 'users',
-            localField: 'email',
-            foreignField: 'email',
-            as:'userDetils'
-        }
-    },{
-        $sort: {
-          'createdAt': -1, // Sort by 'createdAt' field in descending order (newest to oldest)
-        },
-      },
-
-   ])
-   res.status(200).json(result)
+    res.status(200).json(result)
+  } catch (error) {
+    res.status(500).json(error.message)
+  }
 }
