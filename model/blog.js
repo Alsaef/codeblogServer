@@ -20,6 +20,9 @@ const blogSchema=mongoose.Schema({
     codeExample:{
         type:String,
         require:true
+    },
+    link:{
+        type:String
     }
 },{
     timestamps: true
