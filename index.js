@@ -3,6 +3,7 @@ const app = express()
 const mongoose = require('mongoose');
 require('dotenv').config()
 const cors = require('cors')
+const rateLimit = require('express-rate-limit');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const port = process.env.PORT || 5000
 app.use(cors())
@@ -39,7 +40,19 @@ app.use('/api/v1/comment',commentRoute)
 app.use('/api/v1/message',messageRouter)
 app.use('/api/v1/room',roomRoute)
 
-app.post('/generate-blog',async(req,res)=>{
+const generateBlogLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, 
+  max: 5, 
+  message: {
+    success: false,
+    error: 'Too many requests from this IP, please try again after 1 hour.'
+  },
+  standardHeaders: true, 
+  legacyHeaders: false,  
+});
+
+
+app.post('/generate-blog',generateBlogLimiter,async(req,res)=>{
   try {
     const { userPrompt } = req.body;
 
@@ -56,7 +69,6 @@ app.post('/generate-blog',async(req,res)=>{
     res.status(500).json({ error: 'Failed to generate content' });
   }
 })
-
 
 
 app.get('/', (req, res) => {
