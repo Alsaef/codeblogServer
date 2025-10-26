@@ -42,7 +42,7 @@ app.use('/api/v1/room',roomRoute)
 
 const generateBlogLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, 
-  max: 5, 
+  max: 10, 
   message: {
     success: false,
     error: 'Too many requests from this IP, please try again after 1 hour.'
