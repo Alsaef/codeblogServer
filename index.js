@@ -22,7 +22,7 @@ You MUST STRICTLY refuse to answer any question or fulfill any request that is n
 If a user asks for recipes, sports, history, personal advice, or anything non-technical, you must politely decline and remind them you only handle programming topics.`;
 
 const model = genAI.getGenerativeModel({
-  model: "gemini-2.5-pro",
+  model: "gemini-2.5-flash",
   systemInstruction: systemInstruction,
 });
 
@@ -59,6 +59,7 @@ const generateBlogLimiter = rateLimit({
 });
 
 
+
 app.post('/generate-blog', generateBlogLimiter, async (req, res) => {
   try {
     const { userPrompt } = req.body;
@@ -67,12 +68,18 @@ app.post('/generate-blog', generateBlogLimiter, async (req, res) => {
       return res.status(400).json({ error: 'userPrompt is required' });
     }
 
-    const result = await model.generateContent(userPrompt);
-    const response = await result.response;
+    const result = await model.generateContent(userPrompt); // (A)
+    const response = await result.response;                 // (B)
     const text = response.text();
     res.json({ blogContent: text });
   } catch (error) {
     console.error(error);
+    if (error?.status===429) {
+     return res.status(429).json({ 
+        error: 'API Quota Exceeded', 
+        message: 'The AI service limit has been reached. Please wait a moment or try a lower-tier model.' 
+      }); 
+    }
     res.status(500).json({ error: 'Failed to generate content' });
   }
 })
@@ -114,8 +121,8 @@ async function processPdfAndGetSummary(pdfBuffer, userQuery) {
   let systemInstruction = "";
   let userPrompt = "";
 
-if (userQuery?.trim()) {
-  systemInstruction = `
+  if (userQuery?.trim()) {
+    systemInstruction = `
 You are an expert programming assistant and a technical document summarizer.
 Your tasks:
 1. Summarize the document in a clear, structured, line-by-line or section-wise Markdown format.
@@ -125,7 +132,7 @@ Your tasks:
 5. Keep the output clean and readable.
 `;
 
-  userPrompt = `
+    userPrompt = `
 DOCUMENT:
 ${rawText}
 
@@ -137,16 +144,16 @@ Instructions:
 - Then, answer the user's question.
 - Use Markdown formatting.
 `;
-} else {
-  systemInstruction = `
+  } else {
+    systemInstruction = `
 You are a technical document summarizer.
 Your task:
 - Summarize the document in a clear, line-by-line or section-wise Markdown format.
 - Keep it structured and easy to read.
 `;
 
-  userPrompt = `Summarize this document:\n\n${rawText}`;
-}
+    userPrompt = `Summarize this document:\n\n${rawText}`;
+  }
 
   // AI Call
   try {
