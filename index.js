@@ -188,6 +188,62 @@ app.post('/summarize-pdf', upload.single('pdfFile'), async (req, res) => {
 });
 
 
+// Change this line specifically
+const modelTwo = genAI.getGenerativeModel({ 
+  model: "gemini-2.5-flash" // Jodi eta kaj na kore "gemini-1.5-flash-latest" try korun
+});
+
+app.post('/analyze-link', async (req, res) => {
+  try {
+    const { url } = req.body;
+    if (!url) return res.status(400).json({ error: "URL is required" });
+
+    const prompt = `Act as a cyber security expert.
+    Analyze this URL: "${url}"
+    Check for: phishing, typosquatting, and security risks.
+    Return ONLY a valid JSON object. 
+    Format: {"status": "Safe" | "Malicious" | "Suspicious", "score": 0-100, "reason": "short explanation"}`;
+
+    // API version mismatch rodh korte generateContent eikhane thik bhabe call kora
+    const result = await modelTwo.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    });
+
+    const responseText = result.response.text();
+    
+    // Khub e shoktishali Regex jeta JSON baire thaka extra kotha bad diye dibe
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    
+    if (jsonMatch) {
+      const cleanJson = jsonMatch[0];
+      const parsedData = JSON.parse(cleanJson);
+      res.json(parsedData);
+    } else {
+      throw new Error("AI did not return a valid JSON format");
+    }
+
+  } catch (error) {
+    console.error("Detailed Gemini Error:", error);
+
+    // 404 Error handle kora (Model not found)
+    if (error.status === 404) {
+      return res.status(404).json({ 
+        error: "Model version mismatch", 
+        message: "Please ensure your SDK is updated: npm install @google/generative-ai" 
+      });
+    }
+
+    // 429 Quota Error handle kora
+    if (error.status === 429) {
+      return res.status(429).json({ 
+        error: "Too many requests", 
+        message: "API quota exceeded. Please wait 60 seconds." 
+      });
+    }
+
+    res.status(500).json({ error: "Failed to analyze link", details: error.message });
+  }
+});
 
 app.get('/', (req, res) => {
   res.send('Server Rounning!')
